@@ -14,7 +14,8 @@
       "!dist",
       "!build",
       "!test-results",
-      "!playwright-report"
+      "!playwright-report",
+      "!about-teglish"
     ]
   },
   "formatter": {
