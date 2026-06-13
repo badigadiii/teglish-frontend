@@ -60,7 +60,7 @@ export function AuthCard({
   const mode: AuthMode = view === "login" ? "login" : "register";
 
   return (
-    <main className="mx-auto grid min-h-screen w-[min(1120px,calc(100%-32px))] items-center py-8">
+    <main className="mx-auto grid min-h-screen w-[min(1280px,calc(100%-32px))] items-center py-8">
       {view === "landing" ? (
         <section className="relative grid min-h-[620px] overflow-hidden rounded-[36px] border border-white/12 bg-slate-950/75 p-6 shadow-2xl shadow-black/40 backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr]">
           <div className="relative z-10 flex flex-col justify-center gap-5 p-4 sm:p-8">
@@ -88,7 +88,7 @@ export function AuthCard({
               <Button
                 type="button"
                 size="lg"
-                className="h-12 rounded-2xl px-6 text-base font-black shadow-[inset_0_-4px_rgba(0,0,0,0.13)]"
+                className="h-12 rounded-2xl px-6 text-base font-black text-white shadow-[inset_0_-4px_rgba(0,0,0,0.13)]"
                 disabled={!mounted}
                 onClick={() => setView("register")}
               >
@@ -108,7 +108,7 @@ export function AuthCard({
           </div>
 
           <div
-            className="relative z-10 grid min-h-[520px] content-center gap-[18px] rounded-[30px] border border-white/12 p-7"
+            className="relative z-10 grid min-h-[520px] content-center gap-4.5 rounded-[30px] border border-white/12 p-7"
             style={{
               background:
                 "radial-gradient(circle at 30% 20%, rgba(88, 204, 2, .32), transparent 15rem), radial-gradient(circle at 70% 80%, rgba(28, 176, 246, .20), transparent 16rem), rgba(255, 255, 255, .07)",
@@ -118,7 +118,7 @@ export function AuthCard({
             {lessonPreviews.map((lesson, index) => (
               <div
                 key={lesson.label}
-                className="rounded-[24px] border border-white/12 bg-slate-900/75 p-[18px] shadow-[0_12px_28px_rgba(0,0,0,.32)]"
+                className="rounded-3xl border border-white/12 bg-slate-900/75 p-4.5 shadow-[0_12px_28px_rgba(0,0,0,.32)]"
                 style={{
                   marginLeft: index === 1 ? "52px" : undefined,
                   marginRight: index === 2 ? "44px" : undefined,
