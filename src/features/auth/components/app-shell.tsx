@@ -3,11 +3,14 @@
 import {
   BookOpen,
   ChevronDown,
+  Headphones,
   Home,
   LibraryBig,
+  ListChecks,
   LogOut,
   PenTool,
   User,
+  Wand2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -105,6 +108,37 @@ export function AppShell({
                   @{user.username}
                 </span>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile">
+                  <User className="size-4" />
+                  Профиль
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile/exercises">
+                  <Wand2 className="size-4" />
+                  Мои упражнения
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile/quizzes">
+                  <LibraryBig className="size-4" />
+                  Мои квизы
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile/media">
+                  <Headphones className="size-4" />
+                  Мои медиафайлы
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile/attempts">
+                  <ListChecks className="size-4" />
+                  Мои попытки
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled>
                 <User className="size-4" />

@@ -1,0 +1,9 @@
+import { handleRouteError, proxyBackend } from "@/lib/api/route-handlers";
+
+export async function GET() {
+  try {
+    return await proxyBackend("/users/me/exercises");
+  } catch (error) {
+    return handleRouteError(error);
+  }
+}

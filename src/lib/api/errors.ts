@@ -58,11 +58,33 @@ export function normalizeApiError(status: number, payload: unknown): ApiError {
   }
 
   if (status === 401) {
+    if (backendMessage === "Incorrect username or password") {
+      return new ApiError(
+        {
+          status,
+          code: "INVALID_CREDENTIALS",
+          message: "Username или password указаны неверно",
+        },
+        payload,
+      );
+    }
+
     return new ApiError(
       {
         status,
-        code: "INVALID_CREDENTIALS",
-        message: "Username или password указаны неверно",
+        code: "UNAUTHENTICATED",
+        message: backendMessage ?? "Нужно войти в аккаунт",
+      },
+      payload,
+    );
+  }
+
+  if (status === 400 && backendMessage === "Unknown media filename") {
+    return new ApiError(
+      {
+        status,
+        code: "UNKNOWN_MEDIA_FILENAME",
+        message: "Выбранный медиафайл не найден",
       },
       payload,
     );
@@ -85,6 +107,28 @@ export function normalizeApiError(status: number, payload: unknown): ApiError {
         status,
         code: "VALIDATION_ERROR",
         message: "Поля не соответствуют требованиям сервера",
+      },
+      payload,
+    );
+  }
+
+  if (status === 403) {
+    return new ApiError(
+      {
+        status,
+        code: "FORBIDDEN",
+        message: "Недостаточно прав для этого действия",
+      },
+      payload,
+    );
+  }
+
+  if (status === 404) {
+    return new ApiError(
+      {
+        status,
+        code: "NOT_FOUND",
+        message: "Запись не найдена",
       },
       payload,
     );

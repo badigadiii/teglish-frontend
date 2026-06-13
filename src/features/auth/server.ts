@@ -1,25 +1,29 @@
 import type { TokenResponse, UserRead } from "@/features/auth/types";
-import { backendFetch } from "@/lib/api/backend-fetch";
+import { backendClient, withBearerToken } from "@/lib/api/backend-client";
 
 export async function requestToken(username: string, password: string) {
   const body = new URLSearchParams();
   body.set("username", username);
   body.set("password", password);
 
-  return backendFetch<TokenResponse>("/auth/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+  const response = await backendClient.post<TokenResponse>(
+    "/auth/token",
     body,
-  });
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    },
+  );
+
+  return response.data;
 }
 
 export async function requestCurrentUser(token: string) {
-  return backendFetch<UserRead>("/users/me", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await backendClient.get<UserRead>(
+    "/users/me",
+    withBearerToken(token),
+  );
+
+  return response.data;
 }
