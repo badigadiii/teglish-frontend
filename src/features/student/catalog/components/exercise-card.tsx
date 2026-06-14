@@ -23,11 +23,11 @@ export function ExerciseCard({ exercise }: { exercise: PublicExercise }) {
       </CardHeader>
       <CardContent className="grid gap-4">
         <p className="text-sm leading-6 text-muted-foreground">
-          Standalone public exercise #{exercise.id}
+          Публичное упражнение №{exercise.id}
         </p>
         <Button asChild className="w-fit">
           <Link href={`/exercises/${exercise.id}/play`}>
-            Practice
+            Практиковаться
             <ArrowRight className="size-4" />
           </Link>
         </Button>

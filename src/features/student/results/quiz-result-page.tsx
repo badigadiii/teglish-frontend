@@ -13,6 +13,7 @@ import { getQuizSession } from "@/features/student/api";
 import { studentKeys } from "@/features/student/query-keys";
 import {
   formatDateTime,
+  quizSessionStatusLabel,
   scorePercent,
   sessionScore,
 } from "@/features/student/utils";
@@ -39,7 +40,7 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
           <AlertDescription>
             {sessionQuery.error instanceof Error
               ? sessionQuery.error.message
-              : "Failed to load quiz result"}
+              : "Не удалось загрузить результат квиза"}
           </AlertDescription>
         </Alert>
       </div>
@@ -62,38 +63,40 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
       <Button asChild variant="ghost" className="w-fit">
         <Link href="/quizzes">
           <ArrowLeft className="size-4" />
-          Public quizzes
+          Квизы
         </Link>
       </Button>
 
       <Card className="bg-card/80">
         <CardHeader className="gap-3">
-          <Badge className="w-fit">{session.status}</Badge>
+          <Badge className="w-fit">
+            {quizSessionStatusLabel(session.status)}
+          </Badge>
           <h1 className="text-4xl font-semibold tracking-normal">
-            Quiz result
+            Результат квиза
           </h1>
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="grid gap-3 md:grid-cols-4">
-            <Stat label="Score" value={sessionScore(session)} />
-            <Stat label="Answered" value={`${session.answered_questions}`} />
-            <Stat label="Total" value={`${session.total_questions}`} />
-            <Stat label="Percent" value={`${percent}%`} />
+            <Stat label="Результат" value={sessionScore(session)} />
+            <Stat label="Отвечено" value={`${session.answered_questions}`} />
+            <Stat label="Всего" value={`${session.total_questions}`} />
+            <Stat label="Процент" value={`${percent}%`} />
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <Info label="Started" value={formatDateTime(session.started_at)} />
+            <Info label="Начато" value={formatDateTime(session.started_at)} />
             <Info
-              label="Finished"
+              label="Завершено"
               value={formatDateTime(session.finished_at)}
             />
           </div>
 
           <div className="grid gap-3">
-            <h2 className="text-xl font-semibold tracking-normal">Attempts</h2>
+            <h2 className="text-xl font-semibold tracking-normal">Попытки</h2>
             {session.attempts.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No submitted answers.
+                Нет подтвержденных попыток.
               </p>
             ) : (
               session.attempts.map((attempt) => (
@@ -102,7 +105,7 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
                   className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
                 >
                   <div>
-                    <strong>Exercise #{attempt.exercise_id}</strong>
+                    <strong>Упражнение №{attempt.exercise_id}</strong>
                     <p className="text-sm text-muted-foreground">
                       {attempt.answer}
                     </p>
@@ -110,7 +113,7 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
                   <Badge
                     variant={attempt.is_correct ? "default" : "destructive"}
                   >
-                    {attempt.is_correct ? "Correct" : "Wrong answer"}
+                    {attempt.is_correct ? "Верно" : "Неверный ответ"}
                   </Badge>
                 </div>
               ))
@@ -121,13 +124,13 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
             <Button asChild>
               <Link href={`/quizzes/${session.quiz_id}`}>
                 <RotateCcw className="size-4" />
-                Retake quiz
+                Перепройти квиз
               </Link>
             </Button>
             <Button asChild variant="outline">
               <Link href="/profile/attempts">
                 <History className="size-4" />
-                Profile attempts
+                Попытки в профиле
               </Link>
             </Button>
           </div>

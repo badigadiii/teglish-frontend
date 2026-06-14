@@ -24,15 +24,15 @@ export function CatalogPagination({
       <Button asChild variant="outline" disabled={page <= 1}>
         <Link href={`${basePath}?page=${previousPage}&size=${size}`}>
           <ChevronLeft className="size-4" />
-          Previous
+          Назад
         </Link>
       </Button>
       <span className="text-sm text-muted-foreground">
-        Page {page} of {Math.max(1, pages)}
+        Страница {page} из {Math.max(1, pages)}
       </span>
       <Button asChild variant="outline" disabled={page >= pages}>
         <Link href={`${basePath}?page=${nextPage}&size=${size}`}>
-          Next
+          Вперед
           <ChevronRight className="size-4" />
         </Link>
       </Button>

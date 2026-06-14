@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { getPublicQuiz, startQuiz } from "@/features/student/api";
 import { studentKeys } from "@/features/student/query-keys";
+import { formatQuestionCount } from "@/features/student/utils";
 import { ApiError } from "@/lib/api/errors";
 
 export function QuizDetail({ quizId }: { quizId: number }) {
@@ -53,17 +54,16 @@ export function QuizDetail({ quizId }: { quizId: number }) {
         <Card className="w-full bg-card/80">
           <CardHeader>
             <h1 className="text-3xl font-semibold tracking-normal">
-              Quiz not found
+              Квиз не найден
             </h1>
           </CardHeader>
           <CardContent className="grid gap-4">
             <p className="text-sm text-muted-foreground">
-              This quiz is private, missing, or unavailable.
+              Квиз приватный, удален или недоступен.
             </p>
             <Button asChild variant="outline" className="w-fit">
               <Link href="/quizzes">
-                <ArrowLeft className="size-4" />
-                Back to quizzes
+                <ArrowLeft className="size-4" />К квизам
               </Link>
             </Button>
           </CardContent>
@@ -82,16 +82,15 @@ export function QuizDetail({ quizId }: { quizId: number }) {
     <div className="grid gap-6">
       <Button asChild variant="ghost" className="w-fit">
         <Link href="/quizzes">
-          <ArrowLeft className="size-4" />
-          Back to quizzes
+          <ArrowLeft className="size-4" />К квизам
         </Link>
       </Button>
 
       <Card className="bg-card/80">
         <CardHeader className="gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">Public quiz</Badge>
-            <Badge>{quiz.exercise_ids.length} questions</Badge>
+            <Badge variant="outline">Публичный квиз</Badge>
+            <Badge>{formatQuestionCount(quiz.exercise_ids.length)}</Badge>
           </div>
           <h1 className="text-4xl font-semibold tracking-normal">
             {quiz.title}
@@ -100,7 +99,7 @@ export function QuizDetail({ quizId }: { quizId: number }) {
         <CardContent className="grid gap-6">
           <p className="max-w-2xl text-base leading-7 text-muted-foreground">
             {quiz.description ||
-              "Start this training quiz and get feedback after each answer."}
+              "Начните тренировочный квиз и получайте обратную связь после каждого ответа."}
           </p>
 
           {startMutation.isError &&
@@ -112,7 +111,7 @@ export function QuizDetail({ quizId }: { quizId: number }) {
               <AlertDescription>
                 {startMutation.error instanceof Error
                   ? startMutation.error.message
-                  : "Failed to start quiz"}
+                  : "Не удалось начать квиз"}
               </AlertDescription>
             </Alert>
           ) : null}
@@ -129,12 +128,12 @@ export function QuizDetail({ quizId }: { quizId: number }) {
               ) : (
                 <Play className="size-4" />
               )}
-              Start quiz
+              Начать квиз
             </Button>
             <Button asChild type="button" variant="outline" size="lg">
               <Link href="/quizzes">
                 <RotateCcw className="size-4" />
-                Choose another
+                Выбрать другой
               </Link>
             </Button>
           </div>

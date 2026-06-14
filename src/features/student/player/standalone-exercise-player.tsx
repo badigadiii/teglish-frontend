@@ -29,7 +29,7 @@ export function StandaloneExercisePlayer({
   const performMutation = useMutation({
     mutationFn: (answer: string) => {
       if (!questionQuery.data) {
-        throw new Error("Question is not loaded");
+        throw new Error("Вопрос не загружен");
       }
 
       return performExercise(exerciseId, {
@@ -40,8 +40,8 @@ export function StandaloneExercisePlayer({
     onSuccess: (response) => {
       setFeedback(
         response.message === "ok"
-          ? { status: "correct", message: "Correct" }
-          : { status: "wrong", message: "Wrong answer" },
+          ? { status: "correct", message: "Верно" }
+          : { status: "wrong", message: "Неверный ответ" },
       );
     },
   });
@@ -53,12 +53,10 @@ export function StandaloneExercisePlayer({
           <Button asChild variant="ghost" className="w-fit">
             <Link href="/exercises">
               <ArrowLeft className="size-4" />
-              Exercises
+              Упражнения
             </Link>
           </Button>
-          <h1 className="text-3xl font-semibold tracking-normal">
-            Standalone exercise
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-normal">Упражнение</h1>
         </CardHeader>
         <CardContent className="grid gap-5">
           {questionQuery.isLoading ? <Spinner /> : null}
@@ -67,7 +65,7 @@ export function StandaloneExercisePlayer({
               <AlertDescription>
                 {questionQuery.error instanceof Error
                   ? questionQuery.error.message
-                  : "Failed to load exercise"}
+                  : "Не удалось загрузить упражнение"}
               </AlertDescription>
             </Alert>
           ) : null}
@@ -84,7 +82,7 @@ export function StandaloneExercisePlayer({
               <AlertDescription>
                 {performMutation.error instanceof Error
                   ? performMutation.error.message
-                  : "Answer was not submitted"}
+                  : "Ответ не был отправлен"}
               </AlertDescription>
             </Alert>
           ) : null}

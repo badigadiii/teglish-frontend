@@ -25,10 +25,11 @@ export function QuizCatalog({ page, size }: { page: number; size: number }) {
           <LibraryBig className="size-5" />
         </div>
         <h1 className="text-3xl font-semibold tracking-normal">
-          Public quizzes
+          Публичные квизы
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          Pick a public quiz and answer each question with immediate feedback.
+          Выберите публичный квиз и отвечайте на вопросы с мгновенной обратной
+          связью.
         </p>
       </section>
 
@@ -44,14 +45,14 @@ export function QuizCatalog({ page, size }: { page: number; size: number }) {
           <AlertDescription>
             {quizzesQuery.error instanceof Error
               ? quizzesQuery.error.message
-              : "Failed to load quizzes"}
+              : "Не удалось загрузить квизы"}
           </AlertDescription>
         </Alert>
       ) : null}
 
       {!quizzesQuery.isLoading && quizzes.length === 0 ? (
         <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-          No public quizzes yet.
+          Публичных квизов пока нет.
         </div>
       ) : null}
 

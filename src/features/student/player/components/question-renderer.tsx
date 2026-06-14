@@ -47,7 +47,7 @@ export function QuestionRenderer({
         <div className="grid gap-2 rounded-lg border p-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Headphones className="size-4" />
-            Dictation media
+            Аудио для диктанта
           </div>
           <audio controls src={question.media_url} className="w-full">
             <track kind="captions" />
@@ -74,7 +74,7 @@ export function QuestionRenderer({
       ) : (
         <form className="flex flex-col gap-3 sm:flex-row" onSubmit={submitText}>
           <div className="grid flex-1 gap-2">
-            <Label htmlFor="student-answer">Answer</Label>
+            <Label htmlFor="student-answer">Ответ</Label>
             <Input
               id="student-answer"
               value={answer}
@@ -89,7 +89,7 @@ export function QuestionRenderer({
             disabled={disabled || answer.trim().length === 0}
           >
             {disabled ? <Spinner /> : <Send className="size-4" />}
-            Submit answer
+            Отправить ответ
           </Button>
         </form>
       )}

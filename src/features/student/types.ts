@@ -104,5 +104,5 @@ export type QuizSessionDetail = QuizSessionRead & {
 };
 
 export type AnswerFeedback =
-  | { status: "correct"; message: "Correct" }
-  | { status: "wrong"; message: "Wrong answer" };
+  | { status: "correct"; message: "Верно" }
+  | { status: "wrong"; message: "Неверный ответ" };

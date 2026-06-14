@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PublicQuiz } from "@/features/student/types";
+import { formatQuestionCount } from "@/features/student/utils";
 
 export function QuizCard({ quiz }: { quiz: PublicQuiz }) {
   return (
@@ -14,7 +15,9 @@ export function QuizCard({ quiz }: { quiz: PublicQuiz }) {
           <div className="grid size-10 place-items-center rounded-lg bg-primary/15 text-primary">
             <ListChecks className="size-5" />
           </div>
-          <Badge variant="outline">{quiz.exercise_ids.length} questions</Badge>
+          <Badge variant="outline">
+            {formatQuestionCount(quiz.exercise_ids.length)}
+          </Badge>
         </div>
         <CardTitle className="text-xl tracking-normal">
           <Link href={`/quizzes/${quiz.id}`}>{quiz.title}</Link>
@@ -22,7 +25,7 @@ export function QuizCard({ quiz }: { quiz: PublicQuiz }) {
       </CardHeader>
       <CardContent className="grid gap-4">
         <p className="min-h-12 text-sm leading-6 text-muted-foreground">
-          {quiz.description || "Short public practice quiz."}
+          {quiz.description || "Короткий публичный квиз для практики."}
         </p>
         <Button asChild className="w-fit">
           <Link href={`/quizzes/${quiz.id}`}>

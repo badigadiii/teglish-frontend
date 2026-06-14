@@ -53,7 +53,7 @@ export function QuizPlayer({
   const answerMutation = useMutation({
     mutationFn: (answer: string) => {
       if (!sessionId || !currentQuestion) {
-        throw new Error("Quiz session is not ready");
+        throw new Error("Сессия квиза не готова");
       }
 
       return answerQuizSession(sessionId, {
@@ -81,8 +81,8 @@ export function QuizPlayer({
       });
       setFeedback(
         response.is_correct
-          ? { status: "correct", message: "Correct" }
-          : { status: "wrong", message: "Wrong answer" },
+          ? { status: "correct", message: "Верно" }
+          : { status: "wrong", message: "Неверный ответ" },
       );
     },
   });
@@ -90,7 +90,7 @@ export function QuizPlayer({
   const finishMutation = useMutation({
     mutationFn: () => {
       if (!sessionId) {
-        throw new Error("Quiz session is not ready");
+        throw new Error("Сессия квиза не готова");
       }
 
       return finishQuizSession(sessionId);
@@ -109,13 +109,13 @@ export function QuizPlayer({
   if (!session) {
     return (
       <MissingSession quizId={quizId}>
-        Active quiz questions are only available immediately after start.
+        Вопросы активного квиза доступны только сразу после старта.
       </MissingSession>
     );
   }
 
   if (!currentQuestion) {
-    return <MissingSession quizId={quizId}>No question found.</MissingSession>;
+    return <MissingSession quizId={quizId}>Вопрос не найден.</MissingSession>;
   }
 
   const isLast = currentIndex >= session.questions.length - 1;
@@ -128,8 +128,7 @@ export function QuizPlayer({
         <CardHeader className="gap-4">
           <Button asChild variant="ghost" className="w-fit">
             <Link href={`/quizzes/${quizId}`}>
-              <ArrowLeft className="size-4" />
-              Quiz detail
+              <ArrowLeft className="size-4" />К квизу
             </Link>
           </Button>
           <QuizProgress session={session} currentIndex={currentIndex} />
@@ -146,7 +145,7 @@ export function QuizPlayer({
               <AlertDescription>
                 {answerMutation.error instanceof Error
                   ? answerMutation.error.message
-                  : "Answer was not submitted"}
+                  : "Ответ не был отправлен"}
               </AlertDescription>
             </Alert>
           ) : null}
@@ -155,7 +154,7 @@ export function QuizPlayer({
               <AlertDescription>
                 {finishMutation.error instanceof Error
                   ? finishMutation.error.message
-                  : "Quiz was not finished"}
+                  : "Квиз не был завершен"}
               </AlertDescription>
             </Alert>
           ) : null}
@@ -172,7 +171,7 @@ export function QuizPlayer({
                   ) : (
                     <Flag className="size-4" />
                   )}
-                  Finish quiz
+                  Завершить квиз
                 </Button>
               ) : (
                 <Button
@@ -183,7 +182,7 @@ export function QuizPlayer({
                   }}
                 >
                   <StepForward className="size-4" />
-                  Next question
+                  Следующий вопрос
                 </Button>
               )}
             </div>
@@ -193,13 +192,13 @@ export function QuizPlayer({
 
       <Card className="h-fit bg-card/80">
         <CardHeader>
-          <CardTitle className="text-lg tracking-normal">Session</CardTitle>
+          <CardTitle className="text-lg tracking-normal">Сессия</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 text-sm">
-          <Counter label="Answered" value={session.answered_questions} />
-          <Counter label="Correct" value={session.correct_answers} />
+          <Counter label="Отвечено" value={session.answered_questions} />
+          <Counter label="Верно" value={session.correct_answers} />
           <Counter
-            label="Remaining"
+            label="Осталось"
             value={Math.max(
               0,
               session.total_questions - session.answered_questions,
@@ -222,14 +221,14 @@ function MissingSession({
     <div className="grid min-h-80 w-full place-items-center">
       <Card className="w-full bg-card/80">
         <CardHeader>
-          <CardTitle className="tracking-normal">Session unavailable</CardTitle>
+          <CardTitle className="tracking-normal">Сессия недоступна</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4">
           <p className="text-sm text-muted-foreground">
-            {children ?? "Start the quiz again to load its questions."}
+            {children ?? "Запустите квиз заново, чтобы загрузить вопросы."}
           </p>
           <Button asChild className="w-fit">
-            <Link href={`/quizzes/${quizId}`}>Start again</Link>
+            <Link href={`/quizzes/${quizId}`}>Начать заново</Link>
           </Button>
         </CardContent>
       </Card>

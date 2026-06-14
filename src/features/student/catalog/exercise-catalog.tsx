@@ -31,10 +31,10 @@ export function ExerciseCatalog({
           <Dumbbell className="size-5" />
         </div>
         <h1 className="text-3xl font-semibold tracking-normal">
-          Public exercises
+          Публичные упражнения
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          Practice one exercise at a time with backend evaluation.
+          Тренируйтесь по одному упражнению с проверкой ответа.
         </p>
       </section>
 
@@ -50,14 +50,14 @@ export function ExerciseCatalog({
           <AlertDescription>
             {exercisesQuery.error instanceof Error
               ? exercisesQuery.error.message
-              : "Failed to load exercises"}
+              : "Не удалось загрузить упражнения"}
           </AlertDescription>
         </Alert>
       ) : null}
 
       {!exercisesQuery.isLoading && exercises.length === 0 ? (
         <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-          No public exercises yet.
+          Публичных упражнений пока нет.
         </div>
       ) : null}
 

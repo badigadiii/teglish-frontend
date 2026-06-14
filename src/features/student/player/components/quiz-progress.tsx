@@ -20,10 +20,10 @@ export function QuizProgress({
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="font-medium">
-          Question {Math.min(currentIndex + 1, total)} of {total}
+          Вопрос {Math.min(currentIndex + 1, total)} из {total}
         </span>
         <span className="text-muted-foreground">
-          Right answers: {session.correct_answers}/{session.answered_questions}
+          Верных ответов: {session.correct_answers}/{session.answered_questions}
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-muted">
