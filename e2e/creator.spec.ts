@@ -40,8 +40,9 @@ async function login(page: Page, user: ReturnType<typeof uniqueUser>) {
 }
 
 async function createTranslateExercise(page: Page, text: string) {
-  await page.goto("/create");
-  await page.getByRole("button", { name: "Упражнение" }).click();
+  await page.getByRole("button", { name: "Создать" }).click();
+  await page.getByRole("menuitem", { name: "Создать упражнение" }).click();
+  await expectSwitchThumbToMove(page);
   await page.getByLabel("Задание").fill(text);
   await page
     .getByLabel("Правильные ответы, по одному на строку")
@@ -51,6 +52,22 @@ async function createTranslateExercise(page: Page, text: string) {
     .fill("I need help\nI am need help");
   await page.getByRole("button", { name: "Сохранить" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
+}
+
+async function expectSwitchThumbToMove(page: Page) {
+  const switchControl = page.getByRole("switch");
+  const thumb = page.locator('[data-slot="switch-thumb"]');
+  const before = await thumb.boundingBox();
+
+  await switchControl.click();
+
+  const after = await thumb.boundingBox();
+  if (!before || !after) {
+    throw new Error("Switch thumb bounding box was not available");
+  }
+
+  expect(after.x).toBeGreaterThan(before.x);
+  await switchControl.click();
 }
 
 test("creator can create translation exercise from modal", async ({
@@ -88,7 +105,9 @@ test("creator can create quiz from selected exercise order", async ({
   await login(page, user);
   await createTranslateExercise(page, exerciseText);
 
-  await page.getByRole("button", { name: "Квиз" }).click();
+  await page.getByRole("button", { name: "Создать" }).click();
+  await page.getByRole("menuitem", { name: "Создать квиз" }).click();
+  await expectSwitchThumbToMove(page);
   await page.getByLabel("Название").fill(quizTitle);
   await page.getByLabel("Описание").fill("Короткий квиз");
   await page.getByRole("button", { name: "Добавить упражнение" }).click();
@@ -107,29 +126,5 @@ test("creator can create quiz from selected exercise order", async ({
   );
   await card.getByRole("button", { name: "Действия квиза" }).click();
   await expect(page.getByRole("menuitem", { name: "Изменить" })).toBeVisible();
-  await expect(page.getByRole("menuitem", { name: "Удалить" })).toBeVisible();
-});
-
-test("creator can upload media from create and delete it from profile menu", async ({
-  page,
-  request,
-}) => {
-  const user = uniqueUser("creator-media");
-  await registerViaBackend(request, user);
-  await login(page, user);
-
-  await page.goto("/create");
-  await page.getByLabel("Имя").fill("test audio");
-  await page.getByLabel("Файл").setInputFiles({
-    name: "test-audio.wav",
-    mimeType: "audio/wav",
-    buffer: Buffer.from("RIFF....WAVEfmt "),
-  });
-  await page.getByRole("button", { name: "Загрузить" }).click();
-
-  await page.goto("/profile/media");
-  const item = page.getByRole("article", { name: /test_audio_/ });
-  await expect(item).toBeVisible();
-  await item.getByRole("button", { name: "Действия медиафайла" }).click();
   await expect(page.getByRole("menuitem", { name: "Удалить" })).toBeVisible();
 });

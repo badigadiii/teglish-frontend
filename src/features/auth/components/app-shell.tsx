@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen,
   ChevronDown,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,12 +29,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/features/auth/api";
 import type { UserRead } from "@/features/auth/types";
+import {
+  createExercise,
+  createQuiz,
+  getMyExercises,
+  getMyMedia,
+} from "@/features/creator/api";
+import { ExerciseModal } from "@/features/creator/components/exercise-modal";
+import { QuizModal } from "@/features/creator/components/quiz-modal";
+import { creatorKeys } from "@/features/creator/query-keys";
+import type { ExercisePayload, QuizPayload } from "@/features/creator/types";
 
 const navItems = [
   { href: "/learn", label: "Главная", icon: Home },
   { href: "/quizzes", label: "Квизы", icon: LibraryBig },
   { href: "/exercises", label: "Упражнения", icon: Dumbbell },
-  { href: "/create", label: "Создание", icon: PenTool },
 ];
 
 function initials(user: UserRead) {
@@ -48,6 +59,38 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
+  const [quizModalOpen, setQuizModalOpen] = useState(false);
+
+  const mediaQuery = useQuery({
+    queryKey: creatorKeys.media(1, 20),
+    queryFn: () => getMyMedia(1, 20),
+    enabled: exerciseModalOpen,
+  });
+  const exercisesQuery = useQuery({
+    queryKey: creatorKeys.exercises(),
+    queryFn: getMyExercises,
+    enabled: quizModalOpen,
+  });
+
+  const saveExerciseMutation = useMutation({
+    mutationFn: (payload: ExercisePayload) => createExercise(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: creatorKeys.exercises(),
+      });
+      setExerciseModalOpen(false);
+    },
+  });
+
+  const saveQuizMutation = useMutation({
+    mutationFn: (payload: QuizPayload) => createQuiz(payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: creatorKeys.quizzes() });
+      setQuizModalOpen(false);
+    },
+  });
 
   async function handleLogout() {
     await logout();
@@ -86,6 +129,36 @@ export function AppShell({
               );
             })}
           </nav>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="secondary" className="h-10 gap-2">
+                <PenTool className="size-4" />
+                Создать
+                <ChevronDown className="size-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem
+                onSelect={() => {
+                  saveExerciseMutation.reset();
+                  setExerciseModalOpen(true);
+                }}
+              >
+                <Dumbbell className="size-4" />
+                Создать упражнение
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  saveQuizMutation.reset();
+                  setQuizModalOpen(true);
+                }}
+              >
+                <LibraryBig className="size-4" />
+                Создать квиз
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -161,6 +234,34 @@ export function AppShell({
       </header>
 
       <main className="py-8">{children}</main>
+
+      <ExerciseModal
+        open={exerciseModalOpen}
+        media={mediaQuery.data?.items ?? []}
+        pending={saveExerciseMutation.isPending}
+        error={saveExerciseMutation.error ?? mediaQuery.error}
+        onOpenChange={(open) => {
+          setExerciseModalOpen(open);
+          if (!open) {
+            saveExerciseMutation.reset();
+          }
+        }}
+        onSubmit={(payload) => saveExerciseMutation.mutate(payload)}
+      />
+
+      <QuizModal
+        open={quizModalOpen}
+        exercises={exercisesQuery.data?.items ?? []}
+        pending={saveQuizMutation.isPending}
+        error={saveQuizMutation.error ?? exercisesQuery.error}
+        onOpenChange={(open) => {
+          setQuizModalOpen(open);
+          if (!open) {
+            saveQuizMutation.reset();
+          }
+        }}
+        onSubmit={(payload) => saveQuizMutation.mutate(payload)}
+      />
     </div>
   );
 }

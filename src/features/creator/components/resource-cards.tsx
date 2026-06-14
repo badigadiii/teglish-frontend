@@ -7,7 +7,6 @@ import {
   LibraryBig,
   MoreVertical,
   Play,
-  Plus,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -58,10 +57,7 @@ export function ExerciseCardGrid({
 
   if (exercises.length === 0) {
     return (
-      <EmptyResource
-        text="Упражнений пока нет. Создайте перевод, грамматику или диктант."
-        action="Создать упражнение"
-      />
+      <EmptyResource text="Упражнений пока нет. Создайте перевод, грамматику или диктант." />
     );
   }
 
@@ -138,10 +134,7 @@ export function QuizCardGrid({
 
   if (quizzes.length === 0) {
     return (
-      <EmptyResource
-        text="Квизов пока нет. Соберите первый квиз из своих упражнений."
-        action="Создать квиз"
-      />
+      <EmptyResource text="Квизов пока нет. Соберите первый квиз из своих упражнений." />
     );
   }
 
@@ -214,10 +207,7 @@ export function MediaList({
 
   if (media.length === 0) {
     return (
-      <EmptyResource
-        text="Медиафайлов пока нет. Загрузите аудио или видео для диктанта."
-        action="Загрузить медиа"
-      />
+      <EmptyResource text="Медиафайлов пока нет. Загрузите аудио или видео для диктанта." />
     );
   }
 
@@ -399,17 +389,11 @@ function MediaActions({
   );
 }
 
-function EmptyResource({ text, action }: { text: string; action: string }) {
+function EmptyResource({ text }: { text: string }) {
   return (
     <Card>
-      <CardContent className="flex flex-wrap items-center justify-between gap-3 py-8">
+      <CardContent className="py-8">
         <p className="text-sm text-muted-foreground">{text}</p>
-        <Button asChild>
-          <Link href="/create">
-            <Plus className="size-4" />
-            {action}
-          </Link>
-        </Button>
       </CardContent>
     </Card>
   );
