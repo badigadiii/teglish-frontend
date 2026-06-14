@@ -3,6 +3,7 @@
 import {
   BookOpen,
   ChevronDown,
+  Dumbbell,
   Headphones,
   Home,
   LibraryBig,
@@ -30,6 +31,7 @@ import type { UserRead } from "@/features/auth/types";
 const navItems = [
   { href: "/learn", label: "main", icon: Home },
   { href: "/quizzes", label: "quizzes", icon: LibraryBig },
+  { href: "/exercises", label: "exercises", icon: Dumbbell },
   { href: "/create", label: "create", icon: PenTool },
 ];
 
@@ -66,7 +68,8 @@ export function AppShell({
 
           <nav className="flex items-center gap-1">
             {navItems.map((item) => {
-              const active = pathname === item.href;
+              const active =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
 
               return (
                 <Button

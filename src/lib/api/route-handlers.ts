@@ -37,6 +37,22 @@ export async function proxyBackend<T>(
   return Response.json(response.data, { status: response.status });
 }
 
+export async function proxyPublicBackend<T>(
+  path: string,
+  config: AxiosRequestConfig = {},
+) {
+  const response = await backendClient.request<T>({
+    url: path,
+    ...config,
+  });
+
+  if (response.status === 204) {
+    return new Response(null, { status: 204 });
+  }
+
+  return Response.json(response.data, { status: response.status });
+}
+
 export function handleRouteError(error: unknown) {
   return toErrorResponse(error);
 }

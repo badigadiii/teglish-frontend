@@ -11,11 +11,13 @@ import type { UserRead } from "@/features/auth/types";
 import {
   getMyExercises,
   getMyMedia,
-  getMyQuizSessions,
   getMyQuizzes,
 } from "@/features/creator/api";
 import { creatorKeys } from "@/features/creator/query-keys";
 import { exerciseTypeLabel } from "@/features/creator/utils";
+import { getMyQuizSessions } from "@/features/student/api";
+import { studentKeys } from "@/features/student/query-keys";
+import { formatDateTime, sessionScore } from "@/features/student/utils";
 
 export function ProfilePage({
   user,
@@ -37,7 +39,7 @@ export function ProfilePage({
     queryFn: () => getMyMedia(1, 20),
   });
   const sessionsQuery = useQuery({
-    queryKey: creatorKeys.sessions(1, 20),
+    queryKey: studentKeys.mySessions(1, 20),
     queryFn: () => getMyQuizSessions(1, 20),
   });
 
@@ -197,15 +199,30 @@ export function ProfilePage({
               sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border p-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
                 >
                   <div>
                     <strong>Quiz #{session.quiz_id}</strong>
                     <p className="text-sm text-muted-foreground">
-                      {session.correct_answers}/{session.total_questions} верно
+                      {sessionScore(session)} · started{" "}
+                      {formatDateTime(session.started_at)}
                     </p>
+                    {session.finished_at ? (
+                      <p className="text-xs text-muted-foreground">
+                        finished {formatDateTime(session.finished_at)}
+                      </p>
+                    ) : null}
                   </div>
-                  <Badge variant="outline">{session.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{session.status}</Badge>
+                    {session.status === "finished" ? (
+                      <Button asChild size="sm" variant="outline">
+                        <Link href={`/results/quiz-sessions/${session.id}`}>
+                          Result
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               ))
             )}
