@@ -31,10 +31,6 @@ export default function LearnPage() {
         <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-normal md:text-6xl">
           Выберите короткую практику и продолжайте обучение
         </h1>
-        <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-          Первый защищенный экран уже использует реальную сессию и данные
-          пользователя из backend.
-        </p>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
