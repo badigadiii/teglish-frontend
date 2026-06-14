@@ -29,10 +29,10 @@ import { logout } from "@/features/auth/api";
 import type { UserRead } from "@/features/auth/types";
 
 const navItems = [
-  { href: "/learn", label: "main", icon: Home },
-  { href: "/quizzes", label: "quizzes", icon: LibraryBig },
-  { href: "/exercises", label: "exercises", icon: Dumbbell },
-  { href: "/create", label: "create", icon: PenTool },
+  { href: "/learn", label: "Главная", icon: Home },
+  { href: "/quizzes", label: "Квизы", icon: LibraryBig },
+  { href: "/exercises", label: "Упражнения", icon: Dumbbell },
+  { href: "/create", label: "Создание", icon: PenTool },
 ];
 
 function initials(user: UserRead) {

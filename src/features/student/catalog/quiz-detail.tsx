@@ -49,7 +49,7 @@ export function QuizDetail({ quizId }: { quizId: number }) {
 
   if (quizQuery.isError) {
     return (
-      <div className="mx-auto grid min-h-screen w-full max-w-4xl place-items-center px-4 py-8">
+      <div className="grid min-h-80 w-full place-items-center">
         <Card className="w-full bg-card/80">
           <CardHeader>
             <h1 className="text-3xl font-semibold tracking-normal">
@@ -79,7 +79,7 @@ export function QuizDetail({ quizId }: { quizId: number }) {
   }
 
   return (
-    <div className="mx-auto grid min-h-screen w-full max-w-5xl gap-6 px-4 py-8">
+    <div className="grid gap-6">
       <Button asChild variant="ghost" className="w-fit">
         <Link href="/quizzes">
           <ArrowLeft className="size-4" />

@@ -51,7 +51,6 @@ async function createTranslateExercise(page: Page, text: string) {
     .fill("I need help\nI am need help");
   await page.getByRole("button", { name: "Сохранить" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
-  await expect(page.getByText(text)).toBeVisible();
 }
 
 test("creator can create translation exercise from modal", async ({
@@ -64,6 +63,18 @@ test("creator can create translation exercise from modal", async ({
   await login(page, user);
 
   await createTranslateExercise(page, exerciseText);
+  await expect(page.getByText(exerciseText)).toBeHidden();
+
+  await page.goto("/profile/exercises");
+  const card = page.getByRole("article", { name: exerciseText });
+  await expect(card).toBeVisible();
+  await expect(card.getByRole("link", { name: "Начать" })).toHaveAttribute(
+    "href",
+    /\/exercises\/\d+\/play$/,
+  );
+  await card.getByRole("button", { name: "Действия упражнения" }).click();
+  await expect(page.getByRole("menuitem", { name: "Изменить" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Удалить" })).toBeVisible();
 });
 
 test("creator can create quiz from selected exercise order", async ({
@@ -84,7 +95,41 @@ test("creator can create quiz from selected exercise order", async ({
   await expect(page.getByText("1. Translate: Доброе утро")).toBeVisible();
   await page.getByRole("button", { name: "Сохранить" }).click();
   await expect(page.getByRole("dialog")).toBeHidden();
-  await page.getByRole("tab", { name: "Квизы" }).click();
-  await expect(page.getByText(quizTitle)).toBeVisible();
-  await expect(page.getByText("1 упражнений")).toBeVisible();
+  await expect(page.getByText(quizTitle)).toBeHidden();
+
+  await page.goto("/profile/quizzes");
+  const card = page.getByRole("article", { name: quizTitle });
+  await expect(card).toBeVisible();
+  await expect(card.getByText("1 упражнений")).toBeVisible();
+  await expect(card.getByRole("link", { name: "Начать" })).toHaveAttribute(
+    "href",
+    /\/quizzes\/\d+$/,
+  );
+  await card.getByRole("button", { name: "Действия квиза" }).click();
+  await expect(page.getByRole("menuitem", { name: "Изменить" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Удалить" })).toBeVisible();
+});
+
+test("creator can upload media from create and delete it from profile menu", async ({
+  page,
+  request,
+}) => {
+  const user = uniqueUser("creator-media");
+  await registerViaBackend(request, user);
+  await login(page, user);
+
+  await page.goto("/create");
+  await page.getByLabel("Имя").fill("test audio");
+  await page.getByLabel("Файл").setInputFiles({
+    name: "test-audio.wav",
+    mimeType: "audio/wav",
+    buffer: Buffer.from("RIFF....WAVEfmt "),
+  });
+  await page.getByRole("button", { name: "Загрузить" }).click();
+
+  await page.goto("/profile/media");
+  const item = page.getByRole("article", { name: /test_audio_/ });
+  await expect(item).toBeVisible();
+  await item.getByRole("button", { name: "Действия медиафайла" }).click();
+  await expect(page.getByRole("menuitem", { name: "Удалить" })).toBeVisible();
 });

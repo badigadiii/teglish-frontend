@@ -47,7 +47,7 @@ export function StandaloneExercisePlayer({
   });
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-8">
+    <div className="grid gap-5">
       <Card className="bg-card/80">
         <CardHeader className="gap-4">
           <Button asChild variant="ghost" className="w-fit">
@@ -90,6 +90,6 @@ export function StandaloneExercisePlayer({
           ) : null}
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

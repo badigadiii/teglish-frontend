@@ -26,15 +26,15 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
 
   if (sessionQuery.isLoading) {
     return (
-      <main className="grid min-h-screen place-items-center">
+      <div className="grid min-h-80 place-items-center">
         <Spinner />
-      </main>
+      </div>
     );
   }
 
   if (sessionQuery.isError) {
     return (
-      <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-8">
+      <div>
         <Alert variant="destructive">
           <AlertDescription>
             {sessionQuery.error instanceof Error
@@ -42,7 +42,7 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
               : "Failed to load quiz result"}
           </AlertDescription>
         </Alert>
-      </main>
+      </div>
     );
   }
 
@@ -58,7 +58,7 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
   );
 
   return (
-    <main className="mx-auto grid min-h-screen w-full max-w-5xl gap-5 px-4 py-8">
+    <div className="grid gap-5">
       <Button asChild variant="ghost" className="w-fit">
         <Link href="/quizzes">
           <ArrowLeft className="size-4" />
@@ -133,7 +133,7 @@ export function QuizResultPage({ sessionId }: { sessionId: number }) {
           </div>
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }
 

@@ -26,7 +26,7 @@ export function QuizCard({ quiz }: { quiz: PublicQuiz }) {
         </p>
         <Button asChild className="w-fit">
           <Link href={`/quizzes/${quiz.id}`}>
-            Open
+            Начать
             <ArrowRight className="size-4" />
           </Link>
         </Button>

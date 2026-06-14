@@ -142,7 +142,7 @@ test("student can browse public quizzes", async ({ page, request }) => {
   await expect(page.getByRole("link", { name: quiz.title })).toBeVisible();
 });
 
-test("unauthenticated quiz start redirects to login", async ({
+test("unauthenticated student route redirects to login", async ({
   page,
   request,
 }) => {
@@ -161,12 +161,9 @@ test("unauthenticated quiz start redirects to login", async ({
   });
 
   await page.goto(`/quizzes/${quiz.id}`);
-  await page.getByRole("button", { name: "Start quiz" }).click();
 
-  await expect(page).toHaveURL(/\/\?mode=login/);
-  await expect(
-    page.getByRole("region", { name: "Вход в Teglish" }),
-  ).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("button", { name: "Войти" })).toBeVisible();
 });
 
 test("student can start, answer, finish, and review a quiz", async ({
@@ -233,9 +230,9 @@ test("standalone exercise shows correct and wrong feedback", async ({
   await login(page, user);
   await page.goto(`/exercises/${exercise.id}/play`);
 
-  await page.getByRole("button", { name: "is" }).click();
+  await page.getByRole("button", { name: "is", exact: true }).click();
   await expect(page.getByText("Wrong answer")).toBeVisible();
-  await page.getByRole("button", { name: "are" }).click();
+  await page.getByRole("button", { name: "are", exact: true }).click();
   await expect(page.getByText("Correct")).toBeVisible();
 });
 

@@ -1,20 +1,40 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Headphones, LibraryBig, ListChecks, User, Wand2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UserRead } from "@/features/auth/types";
 import {
+  deleteExercise,
+  deleteMedia,
+  deleteQuiz,
   getMyExercises,
   getMyMedia,
   getMyQuizzes,
+  updateExercise,
+  updateQuiz,
 } from "@/features/creator/api";
+import { ExerciseModal } from "@/features/creator/components/exercise-modal";
+import { QuizModal } from "@/features/creator/components/quiz-modal";
+import {
+  ExerciseCardGrid,
+  MediaList,
+  QuizCardGrid,
+} from "@/features/creator/components/resource-cards";
 import { creatorKeys } from "@/features/creator/query-keys";
-import { exerciseTypeLabel } from "@/features/creator/utils";
+import type {
+  ExercisePayload,
+  ExerciseRead,
+  QuizPayload,
+  QuizRead,
+} from "@/features/creator/types";
+import { formatApiError } from "@/features/creator/utils";
 import { getMyQuizSessions } from "@/features/student/api";
 import { studentKeys } from "@/features/student/query-keys";
 import { formatDateTime, sessionScore } from "@/features/student/utils";
@@ -26,6 +46,10 @@ export function ProfilePage({
   user: UserRead;
   section?: "overview" | "exercises" | "quizzes" | "media" | "attempts";
 }) {
+  const queryClient = useQueryClient();
+  const [editingExercise, setEditingExercise] = useState<ExerciseRead>();
+  const [editingQuiz, setEditingQuiz] = useState<QuizRead>();
+
   const exercisesQuery = useQuery({
     queryKey: creatorKeys.exercises(),
     queryFn: getMyExercises,
@@ -47,6 +71,64 @@ export function ProfilePage({
   const quizzes = quizzesQuery.data?.items ?? [];
   const media = mediaQuery.data?.items ?? [];
   const sessions = sessionsQuery.data?.items ?? [];
+
+  const saveExerciseMutation = useMutation({
+    mutationFn: (payload: ExercisePayload) => {
+      if (!editingExercise) {
+        throw new Error("Упражнение для редактирования не выбрано");
+      }
+
+      return updateExercise(editingExercise.id, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: creatorKeys.exercises(),
+      });
+      setEditingExercise(undefined);
+    },
+  });
+
+  const saveQuizMutation = useMutation({
+    mutationFn: (payload: QuizPayload) => {
+      if (!editingQuiz) {
+        throw new Error("Квиз для редактирования не выбран");
+      }
+
+      return updateQuiz(editingQuiz.id, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: creatorKeys.quizzes() });
+      setEditingQuiz(undefined);
+    },
+  });
+
+  const deleteExerciseMutation = useMutation({
+    mutationFn: deleteExercise,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: creatorKeys.exercises() }),
+  });
+
+  const deleteQuizMutation = useMutation({
+    mutationFn: deleteQuiz,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: creatorKeys.quizzes() }),
+  });
+
+  const deleteMediaMutation = useMutation({
+    mutationFn: deleteMedia,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: creatorKeys.all }),
+  });
+
+  const pageError =
+    exercisesQuery.error ??
+    quizzesQuery.error ??
+    mediaQuery.error ??
+    sessionsQuery.error ??
+    deleteExerciseMutation.error ??
+    deleteQuizMutation.error ??
+    deleteMediaMutation.error ??
+    null;
 
   return (
     <div className="grid gap-5">
@@ -74,6 +156,12 @@ export function ProfilePage({
           icon={ListChecks}
         />
       </div>
+
+      {pageError ? (
+        <Alert variant="destructive">
+          <AlertDescription>{formatApiError(pageError)}</AlertDescription>
+        </Alert>
+      ) : null}
 
       {section === "overview" && (
         <div className="grid gap-3 md:grid-cols-2">
@@ -104,88 +192,38 @@ export function ProfilePage({
       )}
 
       {section === "exercises" && (
-        <Card>
-          <CardContent className="grid gap-3 py-4">
-            {exercises.length === 0 ? (
-              <EmptyState
-                text="Упражнений пока нет."
-                action="Создать упражнение"
-              />
-            ) : (
-              exercises.map((exercise) => (
-                <div
-                  key={exercise.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border p-3"
-                >
-                  <div>
-                    <strong>{exercise.exercise_text}</strong>
-                    <p className="text-sm text-muted-foreground">
-                      #{exercise.id} · {exerciseTypeLabel(exercise.type)}
-                    </p>
-                  </div>
-                  <Badge variant={exercise.public ? "default" : "outline"}>
-                    {exercise.public ? "Публично" : "Приватно"}
-                  </Badge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        <ExerciseCardGrid
+          exercises={exercises}
+          loading={exercisesQuery.isLoading}
+          deletePending={deleteExerciseMutation.isPending}
+          onEdit={(exercise) => {
+            saveExerciseMutation.reset();
+            setEditingExercise(exercise);
+          }}
+          onDelete={(id) => deleteExerciseMutation.mutate(id)}
+        />
       )}
 
       {section === "quizzes" && (
-        <Card>
-          <CardContent className="grid gap-3 py-4">
-            {quizzes.length === 0 ? (
-              <EmptyState text="Квизов пока нет." action="Создать квиз" />
-            ) : (
-              quizzes.map((quiz) => (
-                <div
-                  key={quiz.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border p-3"
-                >
-                  <div>
-                    <strong>{quiz.title}</strong>
-                    <p className="text-sm text-muted-foreground">
-                      {quiz.exercise_ids.length} упражнений
-                    </p>
-                  </div>
-                  <Badge variant={quiz.public ? "default" : "outline"}>
-                    {quiz.public ? "Публично" : "Приватно"}
-                  </Badge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        <QuizCardGrid
+          quizzes={quizzes}
+          loading={quizzesQuery.isLoading}
+          deletePending={deleteQuizMutation.isPending}
+          onEdit={(quiz) => {
+            saveQuizMutation.reset();
+            setEditingQuiz(quiz);
+          }}
+          onDelete={(id) => deleteQuizMutation.mutate(id)}
+        />
       )}
 
       {section === "media" && (
-        <Card>
-          <CardContent className="grid gap-3 py-4">
-            {media.length === 0 ? (
-              <EmptyState
-                text="Медиафайлов пока нет."
-                action="Загрузить медиа"
-              />
-            ) : (
-              media.map((item) => (
-                <div
-                  key={item.media_filename}
-                  className="flex items-center justify-between gap-3 rounded-lg border p-3"
-                >
-                  <div className="min-w-0">
-                    <strong className="truncate">{item.media_filename}</strong>
-                    <p className="text-sm text-muted-foreground">
-                      {item.extension}
-                    </p>
-                  </div>
-                  <Badge variant="outline">media</Badge>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+        <MediaList
+          media={media}
+          loading={mediaQuery.isLoading}
+          deletePending={deleteMediaMutation.isPending}
+          onDelete={(filename) => deleteMediaMutation.mutate(filename)}
+        />
       )}
 
       {section === "attempts" && (
@@ -229,6 +267,36 @@ export function ProfilePage({
           </CardContent>
         </Card>
       )}
+
+      <ExerciseModal
+        open={Boolean(editingExercise)}
+        exercise={editingExercise}
+        media={media}
+        pending={saveExerciseMutation.isPending}
+        error={saveExerciseMutation.error}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingExercise(undefined);
+            saveExerciseMutation.reset();
+          }
+        }}
+        onSubmit={(payload) => saveExerciseMutation.mutate(payload)}
+      />
+
+      <QuizModal
+        open={Boolean(editingQuiz)}
+        quiz={editingQuiz}
+        exercises={exercises}
+        pending={saveQuizMutation.isPending}
+        error={saveQuizMutation.error}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingQuiz(undefined);
+            saveQuizMutation.reset();
+          }
+        }}
+        onSubmit={(payload) => saveQuizMutation.mutate(payload)}
+      />
     </div>
   );
 }
@@ -278,17 +346,6 @@ function Stat({ label, value }: { label: string; value: number }) {
     <div className="rounded-lg border p-3">
       <div className="text-xl font-semibold">{value}</div>
       <div className="text-xs text-muted-foreground">{label}</div>
-    </div>
-  );
-}
-
-function EmptyState({ text, action }: { text: string; action: string }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
-      <p className="text-sm text-muted-foreground">{text}</p>
-      <Button asChild>
-        <Link href="/create">{action}</Link>
-      </Button>
     </div>
   );
 }

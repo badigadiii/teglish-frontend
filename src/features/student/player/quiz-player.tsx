@@ -123,93 +123,91 @@ export function QuizPlayer({
     answerMutation.isPending || finishMutation.isPending || finishedLocally;
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-8">
-      <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
-        <Card className="bg-card/80">
-          <CardHeader className="gap-4">
-            <Button asChild variant="ghost" className="w-fit">
-              <Link href={`/quizzes/${quizId}`}>
-                <ArrowLeft className="size-4" />
-                Quiz detail
-              </Link>
-            </Button>
-            <QuizProgress session={session} currentIndex={currentIndex} />
-          </CardHeader>
-          <CardContent className="grid gap-5">
-            <QuestionRenderer
-              question={currentQuestion.question}
-              disabled={controlsDisabled || feedback !== null}
-              onSubmit={(answer) => answerMutation.mutate(answer)}
-            />
-            <QuizFeedback feedback={feedback} />
-            {answerMutation.isError ? (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {answerMutation.error instanceof Error
-                    ? answerMutation.error.message
-                    : "Answer was not submitted"}
-                </AlertDescription>
-              </Alert>
-            ) : null}
-            {finishMutation.isError ? (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {finishMutation.error instanceof Error
-                    ? finishMutation.error.message
-                    : "Quiz was not finished"}
-                </AlertDescription>
-              </Alert>
-            ) : null}
-            {feedback ? (
-              <div className="flex flex-wrap gap-3">
-                {isLast ? (
-                  <Button
-                    type="button"
-                    onClick={() => finishMutation.mutate()}
-                    disabled={finishMutation.isPending}
-                  >
-                    {finishMutation.isPending ? (
-                      <Spinner />
-                    ) : (
-                      <Flag className="size-4" />
-                    )}
-                    Finish quiz
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setFeedback(null);
-                      setCurrentIndex((index) => index + 1);
-                    }}
-                  >
-                    <StepForward className="size-4" />
-                    Next question
-                  </Button>
-                )}
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card className="h-fit bg-card/80">
-          <CardHeader>
-            <CardTitle className="text-lg tracking-normal">Session</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm">
-            <Counter label="Answered" value={session.answered_questions} />
-            <Counter label="Correct" value={session.correct_answers} />
-            <Counter
-              label="Remaining"
-              value={Math.max(
-                0,
-                session.total_questions - session.answered_questions,
+    <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
+      <Card className="bg-card/80">
+        <CardHeader className="gap-4">
+          <Button asChild variant="ghost" className="w-fit">
+            <Link href={`/quizzes/${quizId}`}>
+              <ArrowLeft className="size-4" />
+              Quiz detail
+            </Link>
+          </Button>
+          <QuizProgress session={session} currentIndex={currentIndex} />
+        </CardHeader>
+        <CardContent className="grid gap-5">
+          <QuestionRenderer
+            question={currentQuestion.question}
+            disabled={controlsDisabled || feedback !== null}
+            onSubmit={(answer) => answerMutation.mutate(answer)}
+          />
+          <QuizFeedback feedback={feedback} />
+          {answerMutation.isError ? (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {answerMutation.error instanceof Error
+                  ? answerMutation.error.message
+                  : "Answer was not submitted"}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+          {finishMutation.isError ? (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {finishMutation.error instanceof Error
+                  ? finishMutation.error.message
+                  : "Quiz was not finished"}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+          {feedback ? (
+            <div className="flex flex-wrap gap-3">
+              {isLast ? (
+                <Button
+                  type="button"
+                  onClick={() => finishMutation.mutate()}
+                  disabled={finishMutation.isPending}
+                >
+                  {finishMutation.isPending ? (
+                    <Spinner />
+                  ) : (
+                    <Flag className="size-4" />
+                  )}
+                  Finish quiz
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setFeedback(null);
+                    setCurrentIndex((index) => index + 1);
+                  }}
+                >
+                  <StepForward className="size-4" />
+                  Next question
+                </Button>
               )}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Card className="h-fit bg-card/80">
+        <CardHeader>
+          <CardTitle className="text-lg tracking-normal">Session</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm">
+          <Counter label="Answered" value={session.answered_questions} />
+          <Counter label="Correct" value={session.correct_answers} />
+          <Counter
+            label="Remaining"
+            value={Math.max(
+              0,
+              session.total_questions - session.answered_questions,
+            )}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -221,7 +219,7 @@ function MissingSession({
   children?: React.ReactNode;
 }) {
   return (
-    <main className="mx-auto grid min-h-screen w-full max-w-4xl place-items-center px-4 py-8">
+    <div className="grid min-h-80 w-full place-items-center">
       <Card className="w-full bg-card/80">
         <CardHeader>
           <CardTitle className="tracking-normal">Session unavailable</CardTitle>
@@ -235,7 +233,7 @@ function MissingSession({
           </Button>
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }
 
