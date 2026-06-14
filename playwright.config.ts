@@ -12,7 +12,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "cd ../backend && docker compose up -d postgres && uv run alembic upgrade head && uv run uvicorn src.main:app --host 127.0.0.1 --port 8000",
+        "cd /home/badigadiii/uni/teglish/teglish-backend && docker compose up -d postgres && uv run alembic upgrade head && uv run uvicorn src.main:app --host 127.0.0.1 --port 8000",
       url: "http://127.0.0.1:8000/docs",
       reuseExistingServer: true,
       timeout: 120_000,
