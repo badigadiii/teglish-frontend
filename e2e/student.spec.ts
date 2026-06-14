@@ -194,6 +194,16 @@ test("student can start, answer, finish, and review a quiz", async ({
   await page.goto(`/quizzes/${quiz.id}`);
   await page.getByRole("button", { name: "Start quiz" }).click();
   await expect(page).toHaveURL(new RegExp(`/quizzes/${quiz.id}/play`));
+  const playUrl = page.url();
+  const sessionId = new URL(playUrl).searchParams.get("sessionId");
+  expect(sessionId).toBeTruthy();
+
+  await page.goto("/profile/attempts");
+  await expect(page.getByText("Активно")).toBeVisible();
+  await page.getByRole("link", { name: "Продолжить" }).click();
+  await expect(page).toHaveURL(
+    new RegExp(`/quizzes/${quiz.id}/play\\?sessionId=${sessionId}`),
+  );
 
   await page.getByRole("button", { name: "I need help" }).click();
   await expect(page.getByText("Correct")).toBeVisible();

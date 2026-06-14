@@ -37,6 +37,17 @@ export function quizSessionStatusLabel(status: string) {
   return labels[status] ?? status;
 }
 
+export function quizSessionStatusAccent(status: string) {
+  const accents: Record<string, string | undefined> = {
+    active:
+      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/40 dark:text-emerald-300",
+    finished:
+      "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/70 dark:bg-sky-950/40 dark:text-sky-300",
+  };
+
+  return accents[status];
+}
+
 export function scorePercent(correct: number, total: number) {
   if (total <= 0) {
     return 0;

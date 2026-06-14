@@ -47,7 +47,12 @@ import type {
 import { formatApiError } from "@/features/creator/utils";
 import { getMyQuizSessions } from "@/features/student/api";
 import { studentKeys } from "@/features/student/query-keys";
-import { formatDateTime, sessionScore } from "@/features/student/utils";
+import {
+  formatDateTime,
+  quizSessionStatusAccent,
+  quizSessionStatusLabel,
+  sessionScore,
+} from "@/features/student/utils";
 
 export function ProfilePage({
   user,
@@ -287,11 +292,25 @@ export function ProfilePage({
                     ) : null}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{session.status}</Badge>
+                    <Badge
+                      className={quizSessionStatusAccent(session.status)}
+                      variant="outline"
+                    >
+                      {quizSessionStatusLabel(session.status)}
+                    </Badge>
                     {session.status === "finished" ? (
                       <Button asChild size="sm" variant="outline">
                         <Link href={`/results/quiz-sessions/${session.id}`}>
                           Результат
+                        </Link>
+                      </Button>
+                    ) : null}
+                    {session.status === "active" ? (
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={`/quizzes/${session.quiz_id}/play?sessionId=${session.id}`}
+                        >
+                          Продолжить
                         </Link>
                       </Button>
                     ) : null}
