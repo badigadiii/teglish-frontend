@@ -1,7 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Headphones, LibraryBig, ListChecks, User, Wand2 } from "lucide-react";
+import {
+  Headphones,
+  LibraryBig,
+  ListChecks,
+  Upload,
+  User,
+  Wand2,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -22,6 +29,7 @@ import {
   uploadMedia,
 } from "@/features/creator/api";
 import { ExerciseModal } from "@/features/creator/components/exercise-modal";
+import { MediaUploadDialog } from "@/features/creator/components/media-panel";
 import { QuizModal } from "@/features/creator/components/quiz-modal";
 import {
   ExerciseCardGrid,
@@ -51,6 +59,7 @@ export function ProfilePage({
   const queryClient = useQueryClient();
   const [editingExercise, setEditingExercise] = useState<ExerciseRead>();
   const [editingQuiz, setEditingQuiz] = useState<QuizRead>();
+  const [mediaUploadOpen, setMediaUploadOpen] = useState(false);
 
   const exercisesQuery = useQuery({
     queryKey: creatorKeys.exercises(),
@@ -230,12 +239,26 @@ export function ProfilePage({
       )}
 
       {section === "media" && (
-        <MediaList
-          media={media}
-          loading={mediaQuery.isLoading}
-          deletePending={deleteMediaMutation.isPending}
-          onDelete={(filename) => deleteMediaMutation.mutate(filename)}
-        />
+        <div className="grid gap-4">
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={() => {
+                uploadMediaMutation.reset();
+                setMediaUploadOpen(true);
+              }}
+            >
+              <Upload className="size-4" />
+              Загрузить медиа
+            </Button>
+          </div>
+          <MediaList
+            media={media}
+            loading={mediaQuery.isLoading}
+            deletePending={deleteMediaMutation.isPending}
+            onDelete={(filename) => deleteMediaMutation.mutate(filename)}
+          />
+        </div>
       )}
 
       {section === "attempts" && (
@@ -268,7 +291,7 @@ export function ProfilePage({
                     {session.status === "finished" ? (
                       <Button asChild size="sm" variant="outline">
                         <Link href={`/results/quiz-sessions/${session.id}`}>
-                          Result
+                          Результат
                         </Link>
                       </Button>
                     ) : null}
@@ -299,6 +322,22 @@ export function ProfilePage({
         onUploadMedia={(file, name): Promise<MediaRead> =>
           uploadMediaMutation.mutateAsync({ file, name })
         }
+      />
+
+      <MediaUploadDialog
+        open={mediaUploadOpen}
+        uploadPending={uploadMediaMutation.isPending}
+        error={uploadMediaMutation.error}
+        onOpenChange={(open) => {
+          setMediaUploadOpen(open);
+          if (!open) {
+            uploadMediaMutation.reset();
+          }
+        }}
+        onUpload={async (file, name) => {
+          await uploadMediaMutation.mutateAsync({ file, name });
+          setMediaUploadOpen(false);
+        }}
       />
 
       <QuizModal

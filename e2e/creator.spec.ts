@@ -126,6 +126,33 @@ test("creator can upload media while creating dictation exercise", async ({
   await expect(page.getByRole("article", { name: exerciseText })).toBeVisible();
 });
 
+test("creator can upload media from profile media modal", async ({
+  page,
+  request,
+}) => {
+  const user = uniqueUser("creator-media");
+  const mediaName = `profile-media-${Date.now()}`;
+  await registerViaBackend(request, user);
+  await login(page, user);
+
+  await page.goto("/profile/media");
+  await page.getByRole("button", { name: "Загрузить медиа" }).click();
+  const dialog = page.getByRole("dialog", { name: "Загрузить медиа" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel("Имя").fill(mediaName);
+  await dialog.getByLabel("Файл").setInputFiles({
+    name: "profile-audio.mp3",
+    mimeType: "audio/mpeg",
+    buffer: Buffer.from([0x49, 0x44, 0x33, 0x03]),
+  });
+  await dialog.getByRole("button", { name: "Загрузить" }).click();
+
+  await expect(dialog).toBeHidden();
+  await expect(
+    page.getByRole("article", { name: new RegExp(mediaName) }),
+  ).toBeVisible();
+});
+
 test("creator can create quiz from selected exercise order", async ({
   page,
   request,
