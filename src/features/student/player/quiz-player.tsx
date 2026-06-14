@@ -7,6 +7,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -50,6 +61,21 @@ export function QuizPlayer({
     return session?.questions[currentIndex] ?? null;
   }, [session, currentIndex]);
 
+  const finishMutation = useMutation({
+    mutationFn: () => {
+      if (!sessionId) {
+        throw new Error("Сессия квиза не готова");
+      }
+
+      return finishQuizSession(sessionId);
+    },
+    onSuccess: (detail) => {
+      window.localStorage.removeItem(`teglish.quiz-session.${detail.id}`);
+      setFinishedLocally(true);
+      router.push(`/results/quiz-sessions/${detail.id}`);
+    },
+  });
+
   const answerMutation = useMutation({
     mutationFn: (answer: string) => {
       if (!sessionId || !currentQuestion) {
@@ -62,6 +88,11 @@ export function QuizPlayer({
       });
     },
     onSuccess: (response: QuizAnswerResponse) => {
+      const shouldFinishAfterAnswer =
+        session !== null &&
+        (currentIndex >= session.questions.length - 1 ||
+          response.answered_questions >= session.total_questions);
+
       setSession((previous) => {
         if (!previous) {
           return previous;
@@ -79,26 +110,17 @@ export function QuizPlayer({
 
         return next;
       });
+
+      if (shouldFinishAfterAnswer) {
+        finishMutation.mutate();
+        return;
+      }
+
       setFeedback(
         response.is_correct
           ? { status: "correct", message: "Верно" }
           : { status: "wrong", message: "Неверный ответ" },
       );
-    },
-  });
-
-  const finishMutation = useMutation({
-    mutationFn: () => {
-      if (!sessionId) {
-        throw new Error("Сессия квиза не готова");
-      }
-
-      return finishQuizSession(sessionId);
-    },
-    onSuccess: (detail) => {
-      window.localStorage.removeItem(`teglish.quiz-session.${detail.id}`);
-      setFinishedLocally(true);
-      router.push(`/results/quiz-sessions/${detail.id}`);
     },
   });
 
@@ -160,20 +182,7 @@ export function QuizPlayer({
           ) : null}
           {feedback ? (
             <div className="flex flex-wrap gap-3">
-              {isLast ? (
-                <Button
-                  type="button"
-                  onClick={() => finishMutation.mutate()}
-                  disabled={finishMutation.isPending}
-                >
-                  {finishMutation.isPending ? (
-                    <Spinner />
-                  ) : (
-                    <Flag className="size-4" />
-                  )}
-                  Завершить квиз
-                </Button>
-              ) : (
+              {!isLast ? (
                 <Button
                   type="button"
                   onClick={() => {
@@ -184,7 +193,7 @@ export function QuizPlayer({
                   <StepForward className="size-4" />
                   Следующий вопрос
                 </Button>
-              )}
+              ) : null}
             </div>
           ) : null}
         </CardContent>
@@ -204,6 +213,43 @@ export function QuizPlayer({
               session.total_questions - session.answered_questions,
             )}
           />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={controlsDisabled}
+              >
+                {finishMutation.isPending ? (
+                  <Spinner />
+                ) : (
+                  <Flag className="size-4" />
+                )}
+                Завершить квиз
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Квиз будет завершен, и откроется страница результата.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={finishMutation.isPending}>
+                  Отмена
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={finishMutation.isPending}
+                  onClick={() => finishMutation.mutate()}
+                >
+                  {finishMutation.isPending ? <Spinner /> : null}
+                  Завершить
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>

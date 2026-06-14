@@ -192,7 +192,7 @@ test("student can start, answer, finish, and review a quiz", async ({
 
   await login(page, user);
   await page.goto(`/quizzes/${quiz.id}`);
-  await page.getByRole("button", { name: "Start quiz" }).click();
+  await page.getByRole("button", { name: "Начать квиз" }).click();
   await expect(page).toHaveURL(new RegExp(`/quizzes/${quiz.id}/play`));
   const playUrl = page.url();
   const sessionId = new URL(playUrl).searchParams.get("sessionId");
@@ -206,21 +206,61 @@ test("student can start, answer, finish, and review a quiz", async ({
   );
 
   await page.getByRole("button", { name: "I need help" }).click();
-  await expect(page.getByText("Correct")).toBeVisible();
-  await page.getByRole("button", { name: "Next question" }).click();
+  await expect(page.getByText("Верно")).toBeVisible();
+  await page.getByRole("button", { name: "Следующий вопрос" }).click();
 
   await page.getByRole("button", { name: "is" }).click();
-  await expect(page.getByText("Correct")).toBeVisible();
-  await page.getByRole("button", { name: "Finish quiz" }).click();
 
   await expect(page).toHaveURL(/\/results\/quiz-sessions\/\d+$/);
   await expect(
-    page.getByRole("heading", { name: "Quiz result" }),
+    page.getByRole("heading", { name: "Результат квиза" }),
   ).toBeVisible();
-  await expect(page.getByText("2/2 correct")).toBeVisible();
+  await expect(page.getByText("2/2 верно")).toBeVisible();
 
   await page.reload();
-  await expect(page.getByText("2/2 correct")).toBeVisible();
+  await expect(page.getByText("2/2 верно")).toBeVisible();
+});
+
+test("student confirms before manually finishing a quiz", async ({
+  page,
+  request,
+}) => {
+  const user = uniqueUser("manual-finish");
+  await registerViaBackend(request, user);
+  const token = await getToken(request, user);
+  const exercise = await createExercise(request, token, {
+    type: "translate",
+    exercise_text: "Translate: До встречи",
+    answer: "See you",
+    options: ["See you", "Sea you"],
+  });
+  const quiz = await createQuiz(request, token, {
+    title: `Manual finish quiz ${exercise.id}`,
+    exerciseIds: [exercise.id],
+  });
+
+  await login(page, user);
+  await page.goto(`/quizzes/${quiz.id}`);
+  await page.getByRole("button", { name: "Начать квиз" }).click();
+  await expect(page).toHaveURL(new RegExp(`/quizzes/${quiz.id}/play`));
+
+  await page.getByRole("button", { name: "Завершить квиз" }).click();
+  const confirmation = page.getByRole("alertdialog", { name: "Вы уверены?" });
+  await expect(confirmation).toBeVisible();
+  await confirmation.getByRole("button", { name: "Отмена" }).click();
+  await expect(confirmation).toBeHidden();
+  await expect(page).toHaveURL(new RegExp(`/quizzes/${quiz.id}/play`));
+
+  await page.getByRole("button", { name: "Завершить квиз" }).click();
+  await page
+    .getByRole("alertdialog", { name: "Вы уверены?" })
+    .getByRole("button", { name: "Завершить" })
+    .click();
+
+  await expect(page).toHaveURL(/\/results\/quiz-sessions\/\d+$/);
+  await expect(
+    page.getByRole("heading", { name: "Результат квиза" }),
+  ).toBeVisible();
 });
 
 test("standalone exercise shows correct and wrong feedback", async ({
