@@ -34,6 +34,7 @@ import {
   createQuiz,
   getMyExercises,
   getMyMedia,
+  uploadMedia,
 } from "@/features/creator/api";
 import { ExerciseModal } from "@/features/creator/components/exercise-modal";
 import { QuizModal } from "@/features/creator/components/quiz-modal";
@@ -72,6 +73,16 @@ export function AppShell({
     queryKey: creatorKeys.exercises(),
     queryFn: getMyExercises,
     enabled: quizModalOpen,
+  });
+
+  const uploadMediaMutation = useMutation({
+    mutationFn: ({ file, name }: { file: File; name?: string }) =>
+      uploadMedia(file, name),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: creatorKeys.media(1, 20),
+      });
+    },
   });
 
   const saveExerciseMutation = useMutation({
@@ -231,14 +242,20 @@ export function AppShell({
         open={exerciseModalOpen}
         media={mediaQuery.data?.items ?? []}
         pending={saveExerciseMutation.isPending}
+        uploadPending={uploadMediaMutation.isPending}
         error={saveExerciseMutation.error ?? mediaQuery.error}
+        uploadError={uploadMediaMutation.error}
         onOpenChange={(open) => {
           setExerciseModalOpen(open);
           if (!open) {
             saveExerciseMutation.reset();
+            uploadMediaMutation.reset();
           }
         }}
         onSubmit={(payload) => saveExerciseMutation.mutate(payload)}
+        onUploadMedia={(file, name) =>
+          uploadMediaMutation.mutateAsync({ file, name })
+        }
       />
 
       <QuizModal

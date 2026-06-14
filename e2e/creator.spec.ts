@@ -94,6 +94,38 @@ test("creator can create translation exercise from modal", async ({
   await expect(page.getByRole("menuitem", { name: "Удалить" })).toBeVisible();
 });
 
+test("creator can upload media while creating dictation exercise", async ({
+  page,
+  request,
+}) => {
+  const user = uniqueUser("creator-dictation");
+  const exerciseText = "Listen and write the sentence";
+  const mediaName = `dictation-${Date.now()}`;
+  await registerViaBackend(request, user);
+  await login(page, user);
+
+  await page.getByRole("button", { name: "Создать" }).click();
+  await page.getByRole("menuitem", { name: "Создать упражнение" }).click();
+  await page.getByRole("tab", { name: "Диктант" }).click();
+  await page.getByLabel("Задание").fill(exerciseText);
+  await page.getByLabel("Текст диктанта").fill("I can hear you clearly");
+  await page.getByLabel("Имя загружаемого медиа").fill(mediaName);
+  await page.getByLabel("Загрузить медиафайл").setInputFiles({
+    name: "dictation-audio.mp3",
+    mimeType: "audio/mpeg",
+    buffer: Buffer.from([0x49, 0x44, 0x33, 0x03]),
+  });
+  await page.getByRole("button", { name: "Загрузить медиа" }).click();
+
+  await expect(page.getByLabel("Медиафайл")).toHaveValue(new RegExp(mediaName));
+
+  await page.getByRole("button", { name: "Сохранить" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  await page.goto("/profile/exercises");
+  await expect(page.getByRole("article", { name: exerciseText })).toBeVisible();
+});
+
 test("creator can create quiz from selected exercise order", async ({
   page,
   request,

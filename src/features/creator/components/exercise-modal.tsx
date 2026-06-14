@@ -1,10 +1,9 @@
 "use client";
 
-import { Headphones, Languages, Puzzle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Headphones, Languages, Puzzle, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -137,7 +136,7 @@ function validate(state: FormState) {
     }
 
     if (!state.media_filename) {
-      return "Выберите загруженный медиафайл";
+      return "Выберите или загрузите медиафайл";
     }
   }
 
@@ -149,68 +148,44 @@ export function ExerciseModal({
   exercise,
   media,
   pending,
+  uploadPending,
   error,
+  uploadError,
   onOpenChange,
   onSubmit,
+  onUploadMedia,
 }: {
   open: boolean;
   exercise?: ExerciseRead;
   media: MediaRead[];
   pending: boolean;
+  uploadPending: boolean;
   error: unknown;
+  uploadError: unknown;
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: ExercisePayload) => void;
+  onUploadMedia: (file: File, name?: string) => Promise<MediaRead>;
 }) {
   const [state, setState] = useState<FormState>(() => initialState(exercise));
   const [localError, setLocalError] = useState<string | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadName, setUploadName] = useState("");
+  const [localUploadError, setLocalUploadError] = useState<string | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const lockedType = Boolean(exercise);
-  const Icon = typeIcons[state.type];
 
   useEffect(() => {
     if (open) {
       setState(initialState(exercise));
       setLocalError(null);
+      setUploadFile(null);
+      setUploadName("");
+      setLocalUploadError(null);
+      if (uploadInputRef.current) {
+        uploadInputRef.current.value = "";
+      }
     }
   }, [exercise, open]);
-
-  const previewLines = useMemo(() => {
-    if (state.type === "dictation") {
-      return [
-        {
-          id: "speech-text",
-          text: state.speech_text || "Текст диктанта появится здесь",
-        },
-        {
-          id: "media-filename",
-          text: state.media_filename || "Медиафайл не выбран",
-        },
-      ];
-    }
-
-    if (state.type === "grammar") {
-      return [
-        {
-          id: "correct-answer",
-          text: state.correct_answer || "Правильный ответ",
-        },
-        ...linesToList(state.response_options).map((line) => ({
-          id: `option-${line}`,
-          text: line,
-        })),
-      ];
-    }
-
-    return [
-      ...linesToList(state.correct_answers).map((line) => ({
-        id: `answer-${line}`,
-        text: line,
-      })),
-      ...linesToList(state.response_options).map((line) => ({
-        id: `option-${line}`,
-        text: line,
-      })),
-    ];
-  }, [state]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((current) => ({ ...current, [key]: value }));
@@ -229,7 +204,40 @@ export function ExerciseModal({
     onSubmit(buildPayload(state));
   }
 
+  async function uploadDictationMedia() {
+    if (!uploadFile) {
+      setLocalUploadError("Выберите аудио или видео файл");
+      return;
+    }
+
+    if (
+      uploadFile.type &&
+      !(
+        uploadFile.type.startsWith("audio/") ||
+        uploadFile.type.startsWith("video/")
+      )
+    ) {
+      setLocalUploadError("Поддерживаются только audio/* и video/*");
+      return;
+    }
+
+    setLocalUploadError(null);
+    try {
+      const uploaded = await onUploadMedia(uploadFile, uploadName);
+      update("media_filename", uploaded.media_filename);
+      setUploadFile(null);
+      setUploadName("");
+      if (uploadInputRef.current) {
+        uploadInputRef.current.value = "";
+      }
+    } catch {
+      // The upload mutation exposes the user-facing error through uploadError.
+    }
+  }
+
   const visibleError = localError ?? (error ? formatApiError(error) : null);
+  const visibleUploadError =
+    localUploadError ?? (uploadError ? formatApiError(uploadError) : null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -244,7 +252,7 @@ export function ExerciseModal({
         </DialogHeader>
 
         <form className="grid gap-5" onSubmit={submit}>
-          <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
+          <div className="grid gap-5">
             <div className="grid gap-4">
               <Tabs
                 value={state.type}
@@ -358,6 +366,57 @@ export function ExerciseModal({
                       ))}
                     </select>
                   </div>
+                  <div className="grid gap-3 rounded-lg border bg-muted/30 p-3">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Upload className="size-4" />
+                      Загрузить медиафайл
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                      <div className="grid gap-2">
+                        <Label htmlFor="dictation-media-file">
+                          Загрузить медиафайл
+                        </Label>
+                        <Input
+                          ref={uploadInputRef}
+                          id="dictation-media-file"
+                          type="file"
+                          accept="audio/*,video/*"
+                          onChange={(event) => {
+                            setUploadFile(event.target.files?.[0] ?? null);
+                            setLocalUploadError(null);
+                          }}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="dictation-media-name">
+                          Имя загружаемого медиа
+                        </Label>
+                        <Input
+                          id="dictation-media-name"
+                          value={uploadName}
+                          onChange={(event) =>
+                            setUploadName(event.target.value)
+                          }
+                          placeholder="movie scene"
+                        />
+                      </div>
+                      <Button
+                        className="self-end"
+                        type="button"
+                        disabled={uploadPending}
+                        onClick={uploadDictationMedia}
+                      >
+                        {uploadPending ? "Загрузка..." : "Загрузить медиа"}
+                      </Button>
+                    </div>
+                    {visibleUploadError && (
+                      <Alert variant="destructive">
+                        <AlertDescription>
+                          {visibleUploadError}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
                 </>
               )}
 
@@ -376,37 +435,6 @@ export function ExerciseModal({
                 />
               </div>
             </div>
-
-            <aside className="grid content-start gap-3 rounded-lg border bg-muted/30 p-4">
-              <div className="flex items-center justify-between gap-2">
-                <Badge variant="secondary">
-                  <Icon className="size-3" />
-                  {exerciseTypeLabel(state.type)}
-                </Badge>
-                <Badge variant={state.public ? "default" : "outline"}>
-                  {state.public ? "Публично" : "Приватно"}
-                </Badge>
-              </div>
-              <h3 className="font-medium">
-                {state.exercise_text || "Предпросмотр задания"}
-              </h3>
-              <div className="grid gap-2">
-                {previewLines.length > 0 ? (
-                  previewLines.map((line) => (
-                    <div
-                      key={line.id}
-                      className="rounded-md border bg-card p-2"
-                    >
-                      {line.text}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Ответы появятся после заполнения формы.
-                  </p>
-                )}
-              </div>
-            </aside>
           </div>
 
           {visibleError && (

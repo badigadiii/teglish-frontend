@@ -19,6 +19,7 @@ import {
   getMyQuizzes,
   updateExercise,
   updateQuiz,
+  uploadMedia,
 } from "@/features/creator/api";
 import { ExerciseModal } from "@/features/creator/components/exercise-modal";
 import { QuizModal } from "@/features/creator/components/quiz-modal";
@@ -31,6 +32,7 @@ import { creatorKeys } from "@/features/creator/query-keys";
 import type {
   ExercisePayload,
   ExerciseRead,
+  MediaRead,
   QuizPayload,
   QuizRead,
 } from "@/features/creator/types";
@@ -71,6 +73,16 @@ export function ProfilePage({
   const quizzes = quizzesQuery.data?.items ?? [];
   const media = mediaQuery.data?.items ?? [];
   const sessions = sessionsQuery.data?.items ?? [];
+
+  const uploadMediaMutation = useMutation({
+    mutationFn: ({ file, name }: { file: File; name?: string }) =>
+      uploadMedia(file, name),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: creatorKeys.media(1, 20),
+      });
+    },
+  });
 
   const saveExerciseMutation = useMutation({
     mutationFn: (payload: ExercisePayload) => {
@@ -273,14 +285,20 @@ export function ProfilePage({
         exercise={editingExercise}
         media={media}
         pending={saveExerciseMutation.isPending}
+        uploadPending={uploadMediaMutation.isPending}
         error={saveExerciseMutation.error}
+        uploadError={uploadMediaMutation.error}
         onOpenChange={(open) => {
           if (!open) {
             setEditingExercise(undefined);
             saveExerciseMutation.reset();
+            uploadMediaMutation.reset();
           }
         }}
         onSubmit={(payload) => saveExerciseMutation.mutate(payload)}
+        onUploadMedia={(file, name): Promise<MediaRead> =>
+          uploadMediaMutation.mutateAsync({ file, name })
+        }
       />
 
       <QuizModal
