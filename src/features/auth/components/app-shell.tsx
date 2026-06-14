@@ -216,14 +216,6 @@ export function AppShell({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                <User className="size-4" />
-                role: {user.role}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                status: {user.is_active ? "active" : "inactive"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={handleLogout}>
                 <LogOut className="size-4" />
                 Выйти
