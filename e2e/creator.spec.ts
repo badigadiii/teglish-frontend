@@ -148,9 +148,17 @@ test("creator can upload media from profile media modal", async ({
   await dialog.getByRole("button", { name: "Загрузить" }).click();
 
   await expect(dialog).toBeHidden();
-  await expect(
-    page.getByRole("article", { name: new RegExp(mediaName) }),
-  ).toBeVisible();
+  const mediaCard = page.getByRole("article", { name: new RegExp(mediaName) });
+  await expect(mediaCard).toBeVisible();
+
+  const player = mediaCard.locator("audio, video");
+  await expect(player).toHaveAttribute("src", /\/api\/media\/[^/]+$/);
+
+  const mediaSrc = await player.getAttribute("src");
+  expect(mediaSrc).toBeTruthy();
+  const mediaResponse = await page.request.get(mediaSrc ?? "");
+  expect(mediaResponse.ok()).toBeTruthy();
+  expect(mediaResponse.headers()["content-type"]).toContain("audio/");
 });
 
 test("creator can create quiz from selected exercise order", async ({

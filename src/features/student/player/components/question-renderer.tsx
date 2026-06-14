@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import type { StudentQuestion } from "@/features/student/types";
 import { exerciseTypeLabel } from "@/features/student/utils";
+import { mediaPlaybackUrl } from "@/lib/media-url";
 
 export function QuestionRenderer({
   question,
@@ -49,7 +50,11 @@ export function QuestionRenderer({
             <Headphones className="size-4" />
             Аудио для диктанта
           </div>
-          <audio controls src={question.media_url} className="w-full">
+          <audio
+            controls
+            src={mediaPlaybackUrl(question.media_url)}
+            className="w-full"
+          >
             <track kind="captions" />
           </audio>
         </div>

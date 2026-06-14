@@ -33,6 +33,7 @@ import type {
   QuizRead,
 } from "@/features/creator/types";
 import { exerciseTypeLabel, summarizeExercise } from "@/features/creator/utils";
+import { mediaPlaybackUrl } from "@/lib/media-url";
 
 export function ExerciseCardGrid({
   exercises,
@@ -230,12 +231,16 @@ export function MediaList({
                     <video
                       className="max-h-32 w-full rounded-md border"
                       controls
-                      src={item.media_url}
+                      src={mediaPlaybackUrl(item)}
                     >
                       <track kind="captions" />
                     </video>
                   ) : (
-                    <audio className="w-full" controls src={item.media_url}>
+                    <audio
+                      className="w-full"
+                      controls
+                      src={mediaPlaybackUrl(item)}
+                    >
                       <track kind="captions" />
                     </audio>
                   )}
